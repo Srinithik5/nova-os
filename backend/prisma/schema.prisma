@@ -1,0 +1,14 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Models arrive in Phase 3 (Authentication + database) per the approved
+// blueprint (§9, §14). This file is intentionally schema-valid but
+// model-empty for Phase 0. Note: `prisma generate` refuses to run against
+// a model-less schema (hard error, not a warning) — use `prisma validate`
+// to check this file until Phase 3 adds the first model.
