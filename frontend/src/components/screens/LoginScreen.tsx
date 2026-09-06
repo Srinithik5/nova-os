@@ -6,20 +6,38 @@ import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/primitives/Avatar';
 import { Icon } from '@/components/primitives/Icon';
 import { BootBrandMark } from './BootBrandMark';
+import { login } from '@/lib/api';
+import { useSessionStore } from '@/stores/session';
 
-// Pixel/behavior match for project/Nova OS.dc.html lines 56-71. Wrapped in
-// a real <form> (the prototype used a bare onClick) so Enter-to-submit and
-// basic accessibility come for free — no visual change.
+// The approved design never shows a sign-up screen — it's a single-identity
+// "personal OS" (Alex Rivera / alex@nova.id), seeded server-side
+// (backend/prisma/seed.ts) rather than inventing a new UI screen the
+// design doesn't have. This same form now serves both first sign-in and
+// post-lock unlock (blueprint §8) — both are "prove you know the password."
+const ACCOUNT_EMAIL = 'alex@nova.id';
+
+// Pixel match for project/Nova OS.dc.html lines 56-71, now backed by a
+// real POST /api/v1/auth/login (blueprint §14, Phase 3) instead of
+// advancing on any password.
 export function LoginScreen() {
   const router = useRouter();
+  const setUser = useSessionStore((s) => s.setUser);
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Phase 1 has no backend (blueprint §14) — any submission advances to
-    // the desktop placeholder, matching the prototype's own doLogin, which
-    // accepts any password. Real credential verification arrives in Phase 3.
-    router.push('/desktop');
+    setError(null);
+    setSubmitting(true);
+    try {
+      const user = await login(ACCOUNT_EMAIL, password);
+      setUser(user);
+      router.push('/desktop');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed.');
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -46,16 +64,21 @@ export function LoginScreen() {
           type="password"
           placeholder="Enter password"
           aria-label="Password"
-          className="flex-1 bg-transparent text-[15px] tracking-[.16em] text-white outline-none placeholder:text-white/40"
+          disabled={submitting}
+          autoFocus
+          className="flex-1 bg-transparent text-[15px] tracking-[.16em] text-white outline-none placeholder:text-white/40 disabled:opacity-60"
         />
         <button
           type="submit"
           aria-label="Sign in"
-          className="flex h-11 w-11 items-center justify-center rounded-12 bg-[linear-gradient(140deg,#7cc0ff,#57a9ff)] text-nova-bg shadow-glow"
+          disabled={submitting}
+          className="flex h-11 w-11 items-center justify-center rounded-12 bg-[linear-gradient(140deg,#7cc0ff,#57a9ff)] text-nova-bg shadow-glow disabled:opacity-60"
         >
           <Icon name="arrow" size={20} />
         </button>
       </form>
+
+      {error && <div className="mt-3 text-[13px] text-[#ff8f8f]">{error}</div>}
 
       <div className="mt-4 text-[13px] text-white/40">
         Use <span className="text-nova-blue-soft">Nova&nbsp;ID</span> · Touch to authenticate

@@ -6,6 +6,8 @@ import { IconButton } from '@/components/primitives/IconButton';
 import { APP_REGISTRY } from '@/lib/appRegistry';
 import { useActiveAppId } from '@/stores/windowManager';
 import { useClock } from '@/lib/useClock';
+import { logout } from '@/lib/api';
+import { useSessionStore } from '@/stores/session';
 
 // Pixel match for project/Nova OS.dc.html lines 77-92. The search trigger,
 // AI toggle, and notification bell are visually complete but intentionally
@@ -15,8 +17,20 @@ export function MenuBar() {
   const router = useRouter();
   const activeAppId = useActiveAppId();
   const { time } = useClock();
+  const setUser = useSessionStore((s) => s.setUser);
 
   const activeTitle = APP_REGISTRY.find((app) => app.id === activeAppId)?.label ?? 'Desktop';
+
+  // Blueprint §8: the power icon actually signs out (destroys the
+  // session, lands on /login) — distinct from the Lock screen's soft
+  // lock, which keeps the session valid. Phase 2 only had /lock to send
+  // this to since auth didn't exist yet; now that it does, this replaces
+  // that placeholder with the real behavior the blueprint specifies.
+  async function handleSignOut() {
+    await logout();
+    setUser(null);
+    router.push('/login');
+  }
 
   return (
     <div className="z-30 flex h-11 flex-none items-center gap-3.5 border-b border-white/[0.06] bg-[rgba(8,12,22,0.55)] px-[18px] [backdrop-filter:blur(30px)_saturate(140%)]">
@@ -58,8 +72,8 @@ export function MenuBar() {
       <div className="text-[13px] font-semibold tabular-nums text-white/85">{time}</div>
 
       <IconButton
-        aria-label="Lock Nova OS"
-        onClick={() => router.push('/lock')}
+        aria-label="Sign out"
+        onClick={handleSignOut}
         className="h-[30px] w-[30px] rounded-9 text-white/50 hover:bg-white/[0.06] hover:text-[#ff8f8f]"
       >
         <Icon name="power" size={17} />

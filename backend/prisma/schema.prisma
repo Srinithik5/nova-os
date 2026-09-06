@@ -7,8 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models arrive in Phase 3 (Authentication + database) per the approved
-// blueprint (§9, §14). This file is intentionally schema-valid but
-// model-empty for Phase 0. Note: `prisma generate` refuses to run against
-// a model-less schema (hard error, not a warning) — use `prisma validate`
-// to check this file until Phase 3 adds the first model.
+// Phase 3 (Authentication + database, blueprint §9, §14). Further models
+// (Folder/File, CalendarEvent, Playlist/Track, Notification, Bookmark,
+// Conversation/Message, Setting) arrive with the phases that need them.
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String
+  displayName    String
+  avatarInitials String
+  accentColor    String   @default("#57a9ff")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

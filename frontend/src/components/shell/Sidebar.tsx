@@ -5,12 +5,14 @@ import { Icon } from '@/components/primitives/Icon';
 import { Avatar } from '@/components/primitives/Avatar';
 import { APP_REGISTRY } from '@/lib/appRegistry';
 import { useActiveAppId, useWindowManager } from '@/stores/windowManager';
+import { useSessionStore } from '@/stores/session';
 
 // Pixel match for project/Nova OS.dc.html lines 96-104.
 export function Sidebar() {
   const activeAppId = useActiveAppId();
   const openApp = useWindowManager((s) => s.openApp);
   const openHome = useWindowManager((s) => s.openHome);
+  const user = useSessionStore((s) => s.user);
 
   return (
     <div className="z-20 flex w-[76px] flex-none flex-col items-center gap-[6px] border-r border-white/5 bg-[rgba(8,12,22,0.4)] py-4 [backdrop-filter:blur(24px)]">
@@ -47,7 +49,7 @@ export function Sidebar() {
 
       <div className="flex-1" />
 
-      <Avatar initials="AR" size={44} />
+      <Avatar initials={user?.avatarInitials ?? '··'} size={44} />
     </div>
   );
 }

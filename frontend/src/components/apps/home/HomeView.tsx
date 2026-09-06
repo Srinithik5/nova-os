@@ -5,6 +5,7 @@ import { ProgressBar } from '@/components/primitives/ProgressBar';
 import { GlassPanel } from '@/components/primitives/GlassPanel';
 import { useClock } from '@/lib/useClock';
 import { useWindowManager } from '@/stores/windowManager';
+import { useSessionStore } from '@/stores/session';
 
 const SYSTEM_STATS = [
   { label: 'Neural Core', value: 42 },
@@ -23,15 +24,20 @@ const TODAY_EVENTS = [
 export function HomeView() {
   const { date, now } = useClock();
   const openApp = useWindowManager((s) => s.openApp);
+  const user = useSessionStore((s) => s.user);
 
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const firstName = user?.displayName.split(' ')[0] ?? '';
 
   return (
     <div className="flex h-full flex-col gap-[18px] overflow-auto">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="font-display text-[34px] font-semibold tracking-[-0.02em]">{greeting}, Alex</div>
+          <div className="font-display text-[34px] font-semibold tracking-[-0.02em]">
+            {greeting}
+            {firstName && `, ${firstName}`}
+          </div>
           <div className="mt-1 text-[15px] text-white/50">{date} · All systems nominal</div>
         </div>
         {/* Phase 7 wires this to the AI Assistant panel */}

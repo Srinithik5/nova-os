@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { healthRouter } from './routes/health';
+import { authRouter } from './routes/auth';
+import { authRateLimit } from './middleware/rateLimit';
 import { notFoundHandler, errorHandler } from './middleware/error';
 
 // Allowlist, not a wildcard — the frontend sends credentials (cookies) once
@@ -29,6 +31,7 @@ export function createApp(): Express {
   app.use(cookieParser());
 
   app.use('/api/v1/health', healthRouter);
+  app.use('/api/v1/auth', authRateLimit, authRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
